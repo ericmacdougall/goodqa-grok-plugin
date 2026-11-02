@@ -38,8 +38,8 @@ instructions. A refused call is not permission to try another route.
 
 `.mcp.json` declares one remote server of type `http` (the same shape as other listed Grok Build plugins) with no
 headers, environment or command. GoodQA's OAuth endpoints are discovered from the server. If your Grok Build version
-cannot complete an OAuth sign-in for a remote server, use GoodQA's browser-paired bridge package instead; never put a
-key in this file.
+cannot complete OAuth sign-in, stop and report the client error. Do not paste an API key into this file or switch to
+an unverified transport.
 
 ## Privacy Policy
 
