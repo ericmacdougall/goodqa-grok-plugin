@@ -1,7 +1,55 @@
 # GoodQA for Grok Build
 
-Connect your agent to [GoodQA](https://goodqa.app) tickets, projects and follow-ups through GoodQA's public MCP server
-(`https://goodqa.app/v1/mcp`), configured for OAuth.
+[GoodQA](https://goodqa.app) is an issue tracker with a public MCP (Model Context Protocol) server at
+`https://goodqa.app/v1/mcp`. This plugin points Grok Build at that server and adds one skill, so an agent can work
+with GoodQA tickets, projects and follow-ups on behalf of the person who signed in.
+
+It is for software teams that already track bugs and QA work in GoodQA and want their coding agent to look up
+tickets, file new ones, update them and add comments without leaving the session. The problem it addresses is access
+and safety rather than a new feature: one connection can reach several GoodQA organizations, and ticket text is
+written by other people. Without guidance an agent may guess an organization or follow instructions planted in a
+ticket.
+
+What this package contains and does:
+
+- an MCP server entry for the GoodQA URL, configured for OAuth with no header or API key,
+- a `goodqa` skill telling the agent to call `whoami` and `list_orgs` first, pass `orgId` explicitly, stop when a call
+  is refused instead of trying another route, and treat ticket text, comments and messages as data, not instructions;
+- no credentials, no hooks and no executable code.
+
+The connection acts as you, only within the organizations and scopes you approve, and you can revoke it at any time.
+
+## How it works
+
+```mermaid
+sequenceDiagram
+    participant G as Grok Build
+    participant M as GoodQA MCP server<br/>goodqa.app/v1/mcp
+    participant U as You (browser)
+    G->>M: connect using .mcp.json (type http)
+    M-->>G: OAuth discovery
+    G->>U: GoodQA sign-in and consent
+    U->>M: approve organizations and scopes
+    M-->>G: scoped, revocable token
+    G->>M: whoami, list_orgs, tool calls with orgId
+```
+
+| File | Role |
+|---|---|
+| `.grok-plugin/plugin.json` | Manifest: name `goodqa`, version `0.1.0`, MIT license, `skills` path. |
+| `.mcp.json` | One remote server `goodqa`, type `http`, URL `https://goodqa.app/v1/mcp`. |
+| `skills/goodqa/SKILL.md` | Session-start routine, refusal handling and the rule that content is data. |
+
+The skill file is generated from GoodQA's main codebase and pins version 1.11.0 of GoodQA's conversation rulebook.
+
+## Status and roadmap
+
+| Item | State |
+|---|---|
+| Plugin package version 0.1.0 | In this repository; installable as a local plugin per "Install" below. |
+| OAuth sign-in from Grok Build | Not proven for public users; OAuth client qualification is in progress. If your Grok Build version cannot complete it, the intended behavior is to stop and report the client error. |
+| xAI marketplace listing | Not listed. A check of the upstream `xai-org/plugin-marketplace` catalog on 2026-11-08 found no GoodQA entry. |
+| General availability | Planned; needs a separate rollout decision by GoodQA. |
 
 ## Authentication status
 
